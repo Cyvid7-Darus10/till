@@ -9,6 +9,7 @@ import { formatAmount, type InvoiceRequest, invoiceRequestSchema, type PendingIn
 import { log } from '../log';
 import { answerInstructions, createInstructions, LOCAL_TOOL } from './instructions';
 
+// Upper bounds on model steps, so a confused model can't loop.
 const MAX_ANSWER_STEPS = 10;
 const MAX_CREATE_STEPS = 12;
 
@@ -23,6 +24,7 @@ const modelSettings = () => ({
 // Till must look at Airwallex before it says anything, so the first step always calls a tool.
 const lookFirst = ({ stepNumber }: { stepNumber: number }) => (stepNumber === 0 ? { toolChoice: 'required' as const } : {});
 
+// Tool names only: arguments carry customer data.
 const logTools =
   (job: string) =>
   ({ toolCalls }: { toolCalls: { toolName: string }[] }) => {
@@ -59,15 +61,16 @@ export async function answer(history: ModelMessage[]): Promise<Answer> {
   }
 }
 
+// The model hands its result back through this tool, so the code never parses free text.
 const reportSchema = z.object({
   invoiceId: z.string().max(80).describe('Airwallex invoice id (inv_...), empty if nothing was created'),
   problem: z.string().max(300).describe('Plain-English reason if the invoice was not created, else empty'),
 });
 
 /**
- * Creates one approved invoice with the approving admin's own Airwallex login, then checks the result.
- * The client was resolved and shown on the card before approval; the model only builds the invoice. `requestId` is fixed per
- * approval, so Airwallex creates at most one invoice for it.
+ * Creates one approved invoice with the admin's own Airwallex login, then checks it.
+ * The client was fixed on the card before approval. `requestId` is fixed per card, so a repeat
+ * click cannot create a second invoice.
  */
 export async function createInvoice(pending: PendingInvoice, requestId: string): Promise<CreateResult> {
   const airwallex = await openAirwallex(forCreating(pending.adminId), SCOPES.creating, 'create');

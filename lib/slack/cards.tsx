@@ -7,7 +7,7 @@ import { plainText } from './text';
 /** Slack action ids for the approval buttons. */
 export const ACTIONS = { approve: 'approve_invoice', cancel: 'cancel_invoice' } as const;
 
-/** A reply with a small grey caption underneath saying whose Airwallex login was used. `text` must already be safe Slack text. */
+/** A reply with a grey caption naming the Airwallex login used. `text` must already be safe Slack text. */
 export function reply(text: string, who: string) {
   return (
     <Card>
@@ -30,6 +30,7 @@ function InvoiceFields({ pending }: { pending: PendingInvoice }) {
 
 export function approvalCard(pending: PendingInvoice) {
   const value = encodePending(pending);
+  // Slack hides the buttons from everyone else; bot.ts checks the clicker again anyway.
   const approvers = [pending.adminId];
   return (
     <Card title={COPY.card.title(pending.client.name)}>

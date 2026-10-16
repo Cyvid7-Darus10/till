@@ -1,7 +1,6 @@
 /**
- * What Till may do in Airwallex: the permissions (scopes) each login asks for, and the tools
- * the model may see. Airwallex grants nothing unless scopes are requested, and only offers tools
- * that the granted scopes allow; this file narrows that further.
+ * What Till may do in Airwallex: the scopes each login asks for, and the tools the model sees.
+ * Airwallex only offers tools the granted scopes allow; this file narrows that further.
  */
 
 const VIEW_SCOPES = [
@@ -43,7 +42,7 @@ export const CREATE_TOOLS_FOR_MODEL: readonly string[] = [TOOL.createProduct, TO
 /** Tools only Till's own code calls: find the client, check the result, undo a mismatch. */
 export const CREATE_TOOLS_FOR_CODE: readonly string[] = [TOOL.listCustomers, TOOL.getInvoice, TOOL.voidInvoice];
 
-/** Safety net: never expose anything that moves money or simulates, whatever a login allows. */
+/** Safety net: never load anything that moves money or simulates, whatever a login allows. */
 const MONEY_MOVEMENT = /transfer|payout|conversion_create|create_conversion|simulate/i;
 
 export type Access = 'view' | 'create';

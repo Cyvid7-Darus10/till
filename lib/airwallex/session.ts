@@ -16,6 +16,7 @@ export interface AirwallexSession {
   close: () => Promise<void>;
 }
 
+// Looked up once per instance.
 let serverUrl: string | undefined;
 
 async function resolveServerUrl(): Promise<string> {
@@ -70,6 +71,7 @@ export async function openAirwallex(login: Login, scopes: readonly string[], acc
   const call = async (toolName: string, args: Record<string, unknown>): Promise<unknown> => {
     const tool = tools[toolName];
     if (!tool?.execute) throw new Error(`Airwallex tool ${toolName} is not available to this login`);
+    // Called by code, not inside a model step, so the step context is a placeholder.
     const result = await tool.execute(args, { toolCallId: randomUUID(), messages: [] });
     return parseApiResponse(toolName, result);
   };

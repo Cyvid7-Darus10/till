@@ -2,11 +2,8 @@ import { z } from 'zod';
 import { SLACK_USER_ID } from './slack/user-id';
 
 /**
- * Every name, id and limit Till uses lives here, validated once at startup.
- *
- * None of these are secrets. Two are specific to your deployment and must be set
- * (TILL_KMS_ISSUER_ID, TILL_FINANCE_ADMIN_SLACK_IDS); everything else has a working default
- * that its environment variable (ENV_NAMES below) can override. See .env.example.
+ * Every name, id and limit Till uses, validated once at startup. None are secrets.
+ * TILL_KMS_ISSUER_ID and TILL_FINANCE_ADMIN_SLACK_IDS are required; the rest have defaults.
  */
 
 const commaList = (value: string): string[] =>
@@ -75,6 +72,7 @@ const ENV_NAMES: Record<keyof Config, string> = {
 
 /** Reads config from an environment object. Throws with every problem listed if anything is invalid. */
 export function readConfig(env: Record<string, string | undefined>): Config {
+  // An empty variable counts as unset, so its default applies.
   const raw = Object.fromEntries(Object.entries(ENV_NAMES).map(([key, name]) => [key, env[name] || undefined]));
   const parsed = schema.safeParse(raw);
   if (!parsed.success) {

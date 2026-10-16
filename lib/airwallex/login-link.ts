@@ -4,9 +4,8 @@ import { config } from '../config';
 import { type PendingInvoice, parsePending } from '../invoices/request';
 
 /**
- * After an admin signs in to Airwallex, the browser comes back to Till with the pending invoice.
- * That link is signed by Vercel KMS (the key never leaves Vercel, no secret in the project) and
- * expires, so nobody can forge or replay an old one to post approval cards.
+ * The link back from the Airwallex sign-in carries the pending invoice. Vercel KMS signs it, so the
+ * project holds no secret, and it expires, so an old or forged link can't post approval cards.
  */
 
 /** Marks a token as a Till login link, so a token Vercel KMS signed for anything else is refused. */
@@ -14,6 +13,7 @@ export const LOGIN_LINK_AUDIENCE = 'till:airwallex-login';
 
 const jwksUrl = (issuerId: string): URL => new URL(`https://kms.vercel.com/${issuerId}/jwks.json`);
 
+// Built once per instance; jose caches the fetched keys.
 let keySet: JWTVerifyGetKey | undefined;
 const defaultKeySet = (): JWTVerifyGetKey => {
   keySet ??= createRemoteJWKSet(jwksUrl(config.kmsIssuerId));

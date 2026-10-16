@@ -3,8 +3,8 @@ import { COPY } from '@/lib/copy';
 import { log } from '@/lib/log';
 import { CALLBACK_PARAM, resumeAfterLogin, teamLoginConnected } from '@/lib/slack/bot';
 
-// The Airwallex login sends the browser back here.
-// Team login: just confirm. Own login: the signed link carries the pending invoice; post its approval card.
+// The Airwallex sign-in returns here. Team login: confirm it. Admin login: the signed link
+// carries the pending invoice, so post its approval card.
 
 export async function GET(request: Request): Promise<Response> {
   const params = new URL(request.url).searchParams;

@@ -5,10 +5,11 @@ import type { Customer } from './customer-match';
 import type { InvoiceRequest } from './request';
 
 /**
- * The model creates the invoice, but Till's own code checks the result against what the admin
- * approved, reading it straight back from Airwallex. A mismatch is voided, never left in place.
+ * The model creates the invoice; Till's code reads it back from Airwallex and compares it with the
+ * approval. A mismatch is voided, never left in place.
  */
 
+// Half a cent: absorbs floating-point rounding, nothing more.
 const AMOUNT_TOLERANCE = 0.005;
 const FINALIZED = 'FINALIZED';
 
@@ -58,6 +59,7 @@ export async function checkCreatedInvoice(
     customerId: invoice.billing_customer_id,
   });
   if (problems.length === 0) return { ok: true, number: invoice.number ?? invoice.id, url: invoice.hosted_url ?? '' };
+  // Drafts are never sent, so only a finalized invoice needs voiding.
   if (invoice.status === FINALIZED) await airwallex.call(TOOL.voidInvoice, { invoice_id: invoice.id });
   return { ok: false, problem: `The invoice didn't match what was approved (${problems.join('; ')}), so I voided it.` };
 }

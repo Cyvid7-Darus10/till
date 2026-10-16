@@ -1,6 +1,5 @@
-// Till keeps no shared state, so two serverless instances can't de-duplicate one Slack message.
-// Slack sends each mention twice (an app_mention event and a channel message event) and resends
-// events it thinks timed out. Till only acts on mentions, so it acknowledges the rest unhandled.
+// Slack sends each mention twice (app_mention and a channel message) and resends events it thinks
+// timed out. With no shared state to de-duplicate, Till handles only app_mention and drops the rest.
 
 interface SlackEnvelope {
   event?: { type?: string; channel_type?: string };

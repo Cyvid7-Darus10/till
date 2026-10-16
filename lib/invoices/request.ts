@@ -2,11 +2,11 @@ import { z } from 'zod';
 import { SLACK_USER_ID } from '../slack/user-id';
 
 /**
- * An invoice request and its pending approval. Till keeps no database: a pending invoice travels
- * inside the Slack approval buttons and the signed Airwallex login link. It is always re-validated
- * when it comes back.
+ * An invoice request and its pending approval. With no database, a pending invoice travels in the
+ * Slack buttons and the signed login link, and is validated again whenever it comes back.
  */
 
+const MAX_ID_LENGTH = 80;
 const MAX_NAME_LENGTH = 120;
 const MAX_DESCRIPTION_LENGTH = 200;
 const MAX_INVOICE_AMOUNT = 1_000_000;
@@ -23,8 +23,6 @@ export const invoiceRequestSchema = z.object({
 });
 
 export type InvoiceRequest = z.infer<typeof invoiceRequestSchema>;
-
-const MAX_ID_LENGTH = 80;
 
 export const pendingInvoiceSchema = z.object({
   request: invoiceRequestSchema,

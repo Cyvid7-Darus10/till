@@ -40,6 +40,7 @@ export function pickCustomer(customers: readonly Customer[], requested: string, 
   if (!wanted) return { ok: false, problem: 'The request has no client name.' };
   const exact = customers.filter((customer) => normalizeName(customer.name) === wanted);
   if (exact.length === 1) return { ok: true, customer: exact[0] };
+  // Several exact matches stay ambiguous. A prefix must end at a word: "Park" never finds "Parkside".
   const candidates = exact.length > 0 ? exact : customers.filter((customer) => normalizeName(customer.name).startsWith(`${wanted} `));
   // A partial name is only safe when every client was seen: the exact one could be on a later page.
   if (candidates.length === 1 && complete) return { ok: true, customer: candidates[0] };

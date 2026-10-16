@@ -31,6 +31,9 @@ export const bot = new Chat({
 
 const displayName = (author: Author): string => author.fullName || author.userName;
 
+// Private messages stay in the thread: if Slack can't show one, skip it rather than send a DM.
+const PRIVATE = { fallbackToDM: false } as const;
+
 /** The thread so far, with each person's name in front of their message, for the model. */
 async function threadHistory(thread: Thread) {
   const { messages } = await thread.adapter.fetchMessages(thread.id, { limit: config.threadHistoryLimit });
@@ -90,7 +93,7 @@ async function askAdmin(thread: Thread, admin: Author, request: InvoiceRequest):
     { subject: forCreating(admin.userId), scopes: [...SCOPES.creating] },
     { callbackUrl: callbackUrl.toString() },
   );
-  await thread.postEphemeral(admin, connectCard(url, 'own'), { fallbackToDM: false });
+  await thread.postEphemeral(admin, connectCard(url, 'own'), PRIVATE);
 }
 
 /** No team login yet. Everyone hears that; a finance admin also gets a private button to connect it, once. */
@@ -104,7 +107,7 @@ async function noAccess(thread: Thread, author: Author): Promise<void> {
     { subject: forQuestions(), scopes: [...SCOPES.questions] },
     { callbackUrl: callbackUrl.toString() },
   );
-  await thread.postEphemeral(author, connectCard(url, 'team'), { fallbackToDM: false });
+  await thread.postEphemeral(author, connectCard(url, 'team'), PRIVATE);
 }
 
 bot.onNewMention(async (thread, message) => {
@@ -139,6 +142,7 @@ export async function teamLoginConnected(): Promise<boolean> {
 
 /** Posts the approval card once an admin finishes the Airwallex login. Called by the login callback. */
 export async function resumeAfterLogin(pending: PendingInvoice): Promise<boolean> {
+  // This runs from a browser callback, not a Slack event, so the adapter isn't set up yet.
   await bot.initialize();
   if (!(await isConnected(forCreating(pending.adminId), SCOPES.creating))) return false;
   await bot.thread(pending.threadId).post(approvalCard(pending));
@@ -148,18 +152,20 @@ export async function resumeAfterLogin(pending: PendingInvoice): Promise<boolean
 /** One approval card creates at most one invoice: the request id is derived from the card's message id. */
 const requestIdFor = (messageId: string): string => `till-${messageId.replace(/[^\w.-]/g, '')}`;
 
-// Approve and Cancel carry the whole request. Only the admin named on the card may press them.
+// Approve and Cancel carry the whole request. Only the admin named on the card may press them;
+// anything else that fails the check (stale or tampered) is ignored.
 async function decide(event: ActionEvent, approved: boolean): Promise<void> {
   const pending = event.value ? decodePending(event.value) : null;
   const thread = event.thread;
   const decision = checkDecision(pending, event.user.userId, event.threadId);
   if (!thread || !pending || !decision.ok) {
     if (thread && pending && !decision.ok && decision.reason === 'not-approver') {
-      await thread.postEphemeral(event.user, COPY.onlyApprover(pending.adminName), { fallbackToDM: false });
+      await thread.postEphemeral(event.user, COPY.onlyApprover(pending.adminName), PRIVATE);
     }
     return;
   }
   const outcome = approved ? COPY.approved(pending.adminName) : COPY.cancelled;
+  // Remove the buttons before the slow create, so the card can't be pressed again meanwhile.
   await event.adapter.editMessage(event.threadId, event.messageId, resolvedCard(pending, outcome));
   if (!approved) return;
   try {
