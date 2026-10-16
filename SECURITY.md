@@ -12,7 +12,7 @@ Include what you found, how to reproduce it, and what an attacker could do with 
 - Anyone who is not a listed finance admin creating anything in Airwallex.
 - An admin's approval being used by someone else, or in another thread.
 - The model calling tools that move money, whatever a message or an Airwallex record says.
-- An invoice going out for a different client or amount than the one approved.
+- An invoice going out for a different client or amount than the one on the approval card.
 - Forged links that post approval cards into Slack.
 - Names or model output that ping a channel or disguise a link in Slack.
 

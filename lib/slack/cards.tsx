@@ -32,7 +32,7 @@ export function approvalCard(pending: PendingInvoice) {
   const value = encodePending(pending);
   const approvers = [pending.adminId];
   return (
-    <Card title={COPY.card.title(pending.request.customer)}>
+    <Card title={COPY.card.title(pending.client.name)}>
       {InvoiceFields({ pending })}
       <CardText style="muted">{COPY.card.requestedBy(pending.request.requestedBy, pending.adminName)}</CardText>
       <Actions>
@@ -50,7 +50,7 @@ export function approvalCard(pending: PendingInvoice) {
 /** The approval card after a decision: same details, no buttons, so it can't be pressed twice. */
 export function resolvedCard(pending: PendingInvoice, outcome: string): CardElement {
   const card = toCardElement(
-    <Card title={COPY.card.title(pending.request.customer)}>
+    <Card title={COPY.card.title(pending.client.name)}>
       {InvoiceFields({ pending })}
       <CardText style="muted">{outcome}</CardText>
     </Card>,

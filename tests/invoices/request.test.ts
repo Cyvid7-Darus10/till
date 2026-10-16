@@ -10,6 +10,7 @@ const pending: PendingInvoice = {
     daysUntilDue: 14,
     requestedBy: 'Sam Rivera',
   },
+  client: { id: 'cus_123', name: 'Parkside Dental Group' },
   threadId: 'slack:C0FINANCE1:1792068287.429589',
   adminId: 'UADMIN0001',
   adminName: 'Alex Admin',

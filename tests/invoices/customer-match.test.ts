@@ -48,7 +48,26 @@ describe('picking the client for an invoice', () => {
   });
 });
 
+describe('a partial name when Airwallex has more clients than one page', () => {
+  it('is refused, because the exact client could be on a later page', () => {
+    expect(pickCustomer(customers, 'Parkside Dental', false)).toEqual({
+      ok: false,
+      problem: "Ask again with the client's full name, Parkside Dental Group.",
+    });
+  });
+
+  it('still allows an exact name', () => {
+    expect(pickCustomer(customers, 'Parkside Dental Group', false)).toMatchObject({ ok: true, customer: { id: 'cus_2' } });
+  });
+});
+
 describe('looking the client up in Airwallex', () => {
+  it('refuses a partial name when the list has more pages', async () => {
+    const call = vi.fn(async () => ({ items: customers, has_more: true }));
+    const session: AirwallexSession = { tools: {}, call, close: async () => {} };
+    expect((await findCustomer(session, 'Parkside Dental')).ok).toBe(false);
+  });
+
   it('lists customers and picks one, skipping clients without a name', async () => {
     const call = vi.fn(async () => ({ items: [{ id: 'cus_0' }, ...customers] }));
     const session: AirwallexSession = { tools: {}, call, close: async () => {} };

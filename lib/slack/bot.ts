@@ -7,10 +7,11 @@ import { toAiMessages } from 'chat/ai';
 import { answer, createInvoice } from '../agent/jobs';
 import { signLoginLink } from '../airwallex/login-link';
 import { forCreating, forQuestions } from '../airwallex/logins';
-import { isConnected } from '../airwallex/session';
+import { isConnected, openAirwallex } from '../airwallex/session';
 import { SCOPES } from '../airwallex/tool-policy';
 import { config, isAllowedChannel, isFinanceAdmin } from '../config';
 import { COPY } from '../copy';
+import { type CustomerMatch, findCustomer } from '../invoices/customer-match';
 import { checkDecision, decodePending, type InvoiceRequest, type PendingInvoice } from '../invoices/request';
 import { log } from '../log';
 import { ACTIONS, approvalCard, connectCard, reply, resolvedCard } from './cards';
@@ -51,9 +52,33 @@ async function handOff(thread: Thread): Promise<void> {
   await thread.post(reply(COPY.handOff(admins), COPY.teamLoginLabel));
 }
 
-/** An admin wants an invoice: approval card if their own login is connected, otherwise a private login button first. */
+/** Finds the exact Airwallex client with the view-only team login, so the card can name it. */
+async function resolveClient(request: InvoiceRequest): Promise<CustomerMatch> {
+  const airwallex = await openAirwallex(forQuestions(), SCOPES.questions, 'view');
+  try {
+    return await findCustomer(airwallex, request.customer);
+  } finally {
+    await airwallex.close();
+  }
+}
+
+/**
+ * An admin wants an invoice. Till first resolves the exact client, then posts the approval card if the
+ * admin's own login is connected, otherwise a private login button first.
+ */
 async function askAdmin(thread: Thread, admin: Author, request: InvoiceRequest): Promise<void> {
-  const pending: PendingInvoice = { request, threadId: thread.id, adminId: admin.userId, adminName: displayName(admin) };
+  const match = await resolveClient(request);
+  if (!match.ok) {
+    await thread.post(reply(COPY.notCreated(match.problem), COPY.teamLoginLabel));
+    return;
+  }
+  const pending: PendingInvoice = {
+    request,
+    client: match.customer,
+    threadId: thread.id,
+    adminId: admin.userId,
+    adminName: displayName(admin),
+  };
   if (await isConnected(forCreating(admin.userId), SCOPES.creating)) {
     await thread.post(approvalCard(pending));
     return;
@@ -139,7 +164,7 @@ async function decide(event: ActionEvent, approved: boolean): Promise<void> {
   if (!approved) return;
   try {
     const result = await createInvoice(pending, requestIdFor(event.messageId));
-    const text = result.ok ? COPY.created(result.number, pending.request.customer, result.url) : COPY.notCreated(result.problem);
+    const text = result.ok ? COPY.created(result.number, pending.client.name, result.url) : COPY.notCreated(result.problem);
     await thread.post(reply(text, pending.adminName));
   } catch (error: unknown) {
     log.error('failed to create invoice', { threadId: thread.id, error });

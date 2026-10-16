@@ -10,6 +10,7 @@ describe('signing a login link', () => {
   it('asks Vercel KMS for a short-lived token for this purpose only', async () => {
     const pending = {
       request: { customer: 'A', description: 'B', amount: 1, currency: 'USD', daysUntilDue: 0, requestedBy: 'Sam' },
+      client: { id: 'cus_123', name: 'Parkside Dental Group' },
       threadId: 'slack:C0FINANCE1:1',
       adminId: 'UADMIN0001',
       adminName: 'Alex',

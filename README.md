@@ -18,10 +18,10 @@ holds every login, to Slack and to Airwallex, so the project has no API keys or 
   Till  I can't create invoices with the team login. That needs a finance admin to sign in. I've asked @Alex.
 
   Alex  @Till go ahead
-  Till  [Invoice Parkside Dental]  Website redesign · USD 3,950.00 · Net 30
+  Till  [Invoice Parkside Dental Group]  Website redesign · USD 3,950.00 · Net 30
         Requested by Sam. This will be created with Alex's Airwallex login.
         (Approve) (Cancel)          <- only Alex sees these buttons
-  Till  Created invoice INV-0042 for Parkside Dental. Open invoice
+  Till  Created invoice INV-0042 for Parkside Dental Group. Open invoice
 ```
 
 ## Who can do what
@@ -41,13 +41,14 @@ conversions, simulations) are never loaded for any login.
 
 Creating an invoice goes through these checks:
 
-1. Only the admin named on the approval card sees its buttons, and the server checks who clicked and
+1. Before it asks for approval, Till's code, not the model, finds the Airwallex client. An exact name
+   wins. Otherwise the name must be the start of exactly one client's name ("Parkside Dental" finds
+   "Parkside Dental Group"). If no client or several clients match, Till stops and says so. The
+   approval card shows the client's full name as it appears in Airwallex.
+2. Only the admin named on the approval card sees its buttons, and the server checks who clicked and
    in which thread before it acts.
-2. Till's code, not the model, picks the Airwallex client. An exact name wins; otherwise the name must
-   be the start of exactly one client's name ("Parkside Dental" finds "Parkside Dental Group"). If no
-   client or several clients match, Till stops and says so.
-3. The model builds the invoice for that client. The Airwallex `request_id` comes from the approval
-   card, so a repeated click cannot create a second invoice.
+3. The model builds the invoice for the client on the card. The Airwallex `request_id` comes from
+   the approval card, so a repeated click cannot create a second invoice.
 4. Till reads the invoice back from Airwallex and compares the client, currency, amount and status
    with what was approved. If anything differs, Till voids the invoice.
 
@@ -165,7 +166,8 @@ Vercel Connect saves logins per environment. `check-logins` reports on the envir
   a stored ID. Add a state adapter such as Redis before you run several instances.
 - The invoice check covers client, currency, amount and status. It does not check line items or the
   due date.
-- Client lookup reads the first 100 Airwallex clients.
+- Client lookup reads the first 100 Airwallex clients. With more than that, Till accepts only a
+  client's full name, because a partial name could match the wrong client.
 - Answers come from a model and can be wrong. Read the approval card before you press Approve.
 
 ## License

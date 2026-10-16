@@ -24,8 +24,12 @@ export const invoiceRequestSchema = z.object({
 
 export type InvoiceRequest = z.infer<typeof invoiceRequestSchema>;
 
+const MAX_ID_LENGTH = 80;
+
 export const pendingInvoiceSchema = z.object({
   request: invoiceRequestSchema,
+  /** The Airwallex client Till resolved before asking the admin. The card shows this name. */
+  client: z.object({ id: z.string().min(1).max(MAX_ID_LENGTH), name: z.string().min(1).max(MAX_NAME_LENGTH) }),
   threadId: z.string().min(1).max(MAX_DESCRIPTION_LENGTH),
   adminId: z.string().regex(SLACK_USER_ID),
   adminName: z.string().min(1).max(MAX_NAME_LENGTH),
