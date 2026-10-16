@@ -9,7 +9,7 @@ vi.mock('@vercel/connect', () => ({ ...connect, UserAuthorizationRequiredError }
 vi.mock('@vercel/connect/ai-sdk', () => ({ connectAuthProvider: vi.fn(() => ({})) }));
 vi.mock('@ai-sdk/mcp', () => mcp);
 
-const { isConnected, openAirwallex } = await import('../lib/mcp');
+const { isConnected, openAirwallex } = await import('../../lib/airwallex/session');
 
 const login = { type: 'user', id: 'finance-team' } as const;
 const scopes = ['r:org_action:billing.invoice_view'];

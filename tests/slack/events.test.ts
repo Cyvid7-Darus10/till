@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { duplicateReason } from '../lib/slack-events';
+import { duplicateReason } from '../../lib/slack/events';
 
 const json = (body: unknown, headers: Record<string, string> = {}) =>
   new Request('https://till.example/api/webhooks/slack', {

@@ -1,7 +1,7 @@
 import { after } from 'next/server';
-import { bot } from '@/lib/bot';
 import { log } from '@/lib/log';
-import { duplicateReason } from '@/lib/slack-events';
+import { bot } from '@/lib/slack/bot';
+import { duplicateReason } from '@/lib/slack/events';
 
 export async function POST(request: Request): Promise<Response> {
   const skipped = await duplicateReason(request);

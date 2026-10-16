@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { COPY } from '../lib/copy';
-import { plainText, safeLink } from '../lib/slack-text';
+import { COPY } from '../../lib/copy';
+import { plainText, safeLink } from '../../lib/slack/text';
 
 describe('text from people and the model', () => {
   it('cannot ping the channel, mention someone or disguise a link', () => {

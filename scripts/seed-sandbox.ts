@@ -8,9 +8,9 @@ import { randomUUID } from 'node:crypto';
 import { createMCPClient } from '@ai-sdk/mcp';
 import { getConnectorMetadata, startAuthorization } from '@vercel/connect';
 import { connectAuthProvider } from '@vercel/connect/ai-sdk';
+import { isConnected, parseApiResponse } from '../lib/airwallex/session';
+import { SCOPES } from '../lib/airwallex/tool-policy';
 import { config } from '../lib/config';
-import { isConnected, parseApiResponse } from '../lib/mcp';
-import { SCOPES } from '../lib/tool-policy';
 
 const SEED_LOGIN = { type: 'user', id: 'seed' } as const;
 const DRY_RUN = process.argv.includes('--dry-run');

@@ -1,7 +1,7 @@
 import { signJWT } from '@vercel/kms';
 import { createRemoteJWKSet, type JWTVerifyGetKey, jwtVerify } from 'jose';
-import { config } from './config';
-import { type PendingInvoice, parsePending } from './invoice-request';
+import { config } from '../config';
+import { type PendingInvoice, parsePending } from '../invoices/request';
 
 /**
  * After an admin signs in to Airwallex, the browser comes back to Till with the pending invoice.

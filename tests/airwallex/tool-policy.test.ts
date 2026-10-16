@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { allowedTools } from '../lib/tool-policy';
+import { allowedTools } from '../../lib/airwallex/tool-policy';
 
 const read = (name: string) => ({ name, annotations: { readOnlyHint: true } });
 const write = (name: string) => ({ name, annotations: { readOnlyHint: false } });

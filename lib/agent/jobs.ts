@@ -1,13 +1,14 @@
 import { generateText, hasToolCall, type ModelMessage, stepCountIs, type ToolSet, tool } from 'ai';
 import { z } from 'zod';
-import { forCreating, forQuestions } from './airwallex';
-import { config } from './config';
+import { forCreating, forQuestions } from '../airwallex/logins';
+import { openAirwallex } from '../airwallex/session';
+import { CREATE_TOOLS_FOR_MODEL, SCOPES } from '../airwallex/tool-policy';
+import { config } from '../config';
+import { checkCreatedInvoice } from '../invoices/check';
+import { findCustomer } from '../invoices/customer-match';
+import { formatAmount, type InvoiceRequest, invoiceRequestSchema, type PendingInvoice } from '../invoices/request';
+import { log } from '../log';
 import { answerInstructions, createInstructions, LOCAL_TOOL } from './instructions';
-import { checkCreatedInvoice } from './invoice-check';
-import { formatAmount, type InvoiceRequest, invoiceRequestSchema, type PendingInvoice } from './invoice-request';
-import { log } from './log';
-import { openAirwallex } from './mcp';
-import { CREATE_TOOLS_FOR_MODEL, SCOPES } from './tool-policy';
 
 const MAX_ANSWER_STEPS = 10;
 const MAX_CREATE_STEPS = 12;
@@ -66,17 +67,20 @@ const reportSchema = z.object({
 
 /**
  * Creates one approved invoice with the approving admin's own Airwallex login, then checks the result.
- * `requestId` is fixed per approval, so Airwallex creates at most one invoice for it.
+ * Till's code picks the client first; the model only builds the invoice. `requestId` is fixed per
+ * approval, so Airwallex creates at most one invoice for it.
  */
 export async function createInvoice(pending: PendingInvoice, requestId: string): Promise<CreateResult> {
   const airwallex = await openAirwallex(forCreating(pending.adminId), SCOPES.creating, 'create');
   const { request } = pending;
   try {
+    const match = await findCustomer(airwallex, request.customer);
+    if (!match.ok) return { ok: false, problem: match.problem };
     const result = await generateText({
       ...modelSettings(),
-      system: createInstructions(requestId),
+      system: createInstructions(requestId, match.customer.id),
       prompt: [
-        `Client: ${request.customer}`,
+        `Client: ${match.customer.name}`,
         `Line item: ${request.description}`,
         `Amount: ${formatAmount(request)} (${request.amount} in major units)`,
         `Currency: ${request.currency}`,
@@ -93,7 +97,7 @@ export async function createInvoice(pending: PendingInvoice, requestId: string):
     const call = result.toolCalls.find((c) => c.toolName === LOCAL_TOOL.reportInvoice);
     const report = call ? reportSchema.parse(call.input) : { invoiceId: '', problem: 'I could not confirm the invoice was created.' };
     if (!report.invoiceId) return { ok: false, problem: report.problem || 'No invoice was created.' };
-    return await checkCreatedInvoice(airwallex, report.invoiceId, request);
+    return await checkCreatedInvoice(airwallex, report.invoiceId, request, match.customer);
   } finally {
     await airwallex.close();
   }

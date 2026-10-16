@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseApiResponse } from '../lib/mcp';
+import { parseApiResponse } from '../../lib/airwallex/session';
 
 const result = (text: string, isError = false) => ({ isError, content: [{ type: 'text', text }] });
 

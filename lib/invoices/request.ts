@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SLACK_USER_ID } from './slack-ids';
+import { SLACK_USER_ID } from '../slack/user-id';
 
 /**
  * An invoice request and its pending approval. Till keeps no database: a pending invoice travels

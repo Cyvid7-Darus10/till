@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { forCreating, forQuestions } from '../lib/airwallex';
+import { forCreating, forQuestions } from '../../lib/airwallex/logins';
 
 describe('whose Airwallex login', () => {
   it('is one shared team login for questions', () => {

@@ -1,5 +1,5 @@
 /** Every sentence Till shows people, in one place. Names and details from people pass through plainText. */
-import { plainText, safeLink } from './slack-text';
+import { plainText, safeLink } from './slack/text';
 
 export const COPY = {
   noAccess: "I don't have access to our finances yet.",

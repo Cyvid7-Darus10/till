@@ -1,7 +1,7 @@
 import { generateKeyPair, type JWTVerifyGetKey, SignJWT } from 'jose';
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { PendingInvoice } from '../lib/invoice-request';
-import { LOGIN_LINK_AUDIENCE, verifyLoginLink } from '../lib/login-link';
+import { LOGIN_LINK_AUDIENCE, verifyLoginLink } from '../../lib/airwallex/login-link';
+import type { PendingInvoice } from '../../lib/invoices/request';
 
 // Stands in for Vercel KMS: a local key pair, verified the same way as the real JWKS.
 const pending: PendingInvoice = {

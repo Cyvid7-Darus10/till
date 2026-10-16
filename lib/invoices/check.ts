@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import type { InvoiceRequest } from './invoice-request';
-import type { AirwallexSession } from './mcp';
-import { TOOL } from './tool-policy';
+import type { AirwallexSession } from '../airwallex/session';
+import { TOOL } from '../airwallex/tool-policy';
+import type { Customer } from './customer-match';
+import type { InvoiceRequest } from './request';
 
 /**
  * The model creates the invoice, but Till's own code checks the result against what the admin
@@ -10,7 +11,6 @@ import { TOOL } from './tool-policy';
 
 const AMOUNT_TOLERANCE = 0.005;
 const FINALIZED = 'FINALIZED';
-const COMPANY_SUFFIXES = /\b(ltd|limited|inc|incorporated|llc|co|corp|corporation|gmbh|pte|plc)\b\.?/g;
 
 const invoiceSchema = z.object({
   id: z.string(),
@@ -22,49 +22,40 @@ const invoiceSchema = z.object({
   hosted_url: z.string().optional(),
 });
 
-const customerSchema = z.object({ name: z.string() });
-
 export interface CreatedInvoice {
   status: string;
   currency: string;
   totalAmount: number;
-  customerName: string;
+  customerId: string;
 }
 
-const normalizeName = (name: string): string =>
-  name
-    .toLowerCase()
-    .replace(COMPANY_SUFFIXES, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-
 /** Lists every way the created invoice differs from the approved request. Empty means it matches. */
-export function findMismatches(approved: InvoiceRequest, created: CreatedInvoice): string[] {
+export function findMismatches(approved: InvoiceRequest, customer: Customer, created: CreatedInvoice): string[] {
   const problems: string[] = [];
   if (created.status !== FINALIZED) problems.push(`status is ${created.status}, not finalized`);
   if (created.currency !== approved.currency) problems.push(`currency is ${created.currency}, approved ${approved.currency}`);
   if (Math.abs(created.totalAmount - approved.amount) > AMOUNT_TOLERANCE) {
     problems.push(`total is ${created.totalAmount}, approved ${approved.amount}`);
   }
-  const want = normalizeName(approved.customer);
-  const got = normalizeName(created.customerName);
-  if (!want || !got || !(got.includes(want) || want.includes(got))) {
-    problems.push(`client is ${created.customerName}, approved ${approved.customer}`);
-  }
+  if (created.customerId !== customer.id) problems.push(`it is billed to another client, not ${customer.name}`);
   return problems;
 }
 
 export type CheckResult = { ok: true; number: string; url: string } | { ok: false; problem: string };
 
 /** Reads the invoice back from Airwallex, compares it with the approval, and voids it on any mismatch. */
-export async function checkCreatedInvoice(airwallex: AirwallexSession, invoiceId: string, approved: InvoiceRequest): Promise<CheckResult> {
+export async function checkCreatedInvoice(
+  airwallex: AirwallexSession,
+  invoiceId: string,
+  approved: InvoiceRequest,
+  customer: Customer,
+): Promise<CheckResult> {
   const invoice = invoiceSchema.parse(await airwallex.call(TOOL.getInvoice, { invoice_id: invoiceId }));
-  const customer = customerSchema.parse(await airwallex.call(TOOL.getCustomer, { customer_id: invoice.billing_customer_id }));
-  const problems = findMismatches(approved, {
+  const problems = findMismatches(approved, customer, {
     status: invoice.status,
     currency: invoice.currency,
     totalAmount: invoice.total_amount,
-    customerName: customer.name,
+    customerId: invoice.billing_customer_id,
   });
   if (problems.length === 0) return { ok: true, number: invoice.number ?? invoice.id, url: invoice.hosted_url ?? '' };
   if (invoice.status === FINALIZED) await airwallex.call(TOOL.voidInvoice, { invoice_id: invoice.id });

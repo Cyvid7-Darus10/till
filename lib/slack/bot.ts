@@ -4,17 +4,17 @@ import { startAuthorization } from '@vercel/connect';
 import { connectSlackAdapter } from '@vercel/connect/chat';
 import { type ActionEvent, type Author, Chat, type Thread } from 'chat';
 import { toAiMessages } from 'chat/ai';
-import { answer, createInvoice } from './agent';
-import { forCreating, forQuestions } from './airwallex';
+import { answer, createInvoice } from '../agent/jobs';
+import { signLoginLink } from '../airwallex/login-link';
+import { forCreating, forQuestions } from '../airwallex/logins';
+import { isConnected } from '../airwallex/session';
+import { SCOPES } from '../airwallex/tool-policy';
+import { config, isAllowedChannel, isFinanceAdmin } from '../config';
+import { COPY } from '../copy';
+import { checkDecision, decodePending, type InvoiceRequest, type PendingInvoice } from '../invoices/request';
+import { log } from '../log';
 import { ACTIONS, approvalCard, connectCard, reply, resolvedCard } from './cards';
-import { config, isAllowedChannel, isFinanceAdmin } from './config';
-import { COPY } from './copy';
-import { checkDecision, decodePending, type InvoiceRequest, type PendingInvoice } from './invoice-request';
-import { log } from './log';
-import { signLoginLink } from './login-link';
-import { isConnected } from './mcp';
-import { plainText } from './slack-text';
-import { SCOPES } from './tool-policy';
+import { plainText } from './text';
 
 /** Where the Airwallex login sends people back to. Paths are defined by the route files under app/api/. */
 export const CALLBACK_PATH = '/api/airwallex/connected';

@@ -1,7 +1,7 @@
-import { CALLBACK_PARAM, resumeAfterLogin, teamLoginConnected } from '@/lib/bot';
+import { verifyLoginLink } from '@/lib/airwallex/login-link';
 import { COPY } from '@/lib/copy';
 import { log } from '@/lib/log';
-import { verifyLoginLink } from '@/lib/login-link';
+import { CALLBACK_PARAM, resumeAfterLogin, teamLoginConnected } from '@/lib/slack/bot';
 
 // The Airwallex login sends the browser back here.
 // Team login: just confirm. Own login: the signed link carries the pending invoice; post its approval card.

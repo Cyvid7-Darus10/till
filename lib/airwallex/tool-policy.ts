@@ -29,7 +29,6 @@ export const SCOPES = {
 /** Airwallex MCP tool names Till uses by name. */
 export const TOOL = {
   listCustomers: 'list_billing_customers',
-  getCustomer: 'retrieve_billing_customer',
   createProduct: 'create_billing_product',
   createInvoice: 'create_billing_invoice',
   addLineItems: 'add_billing_invoice_line_items',
@@ -39,18 +38,10 @@ export const TOOL = {
 } as const;
 
 /** The only tools the model sees when creating an invoice. Anything new Airwallex adds stays out. */
-export const CREATE_TOOLS_FOR_MODEL: readonly string[] = [
-  TOOL.listCustomers,
-  TOOL.getCustomer,
-  TOOL.createProduct,
-  TOOL.createInvoice,
-  TOOL.addLineItems,
-  TOOL.finalizeInvoice,
-  TOOL.getInvoice,
-];
+export const CREATE_TOOLS_FOR_MODEL: readonly string[] = [TOOL.createProduct, TOOL.createInvoice, TOOL.addLineItems, TOOL.finalizeInvoice];
 
-/** Tools only Till's own code calls, to check the result and undo a mismatch. */
-export const CREATE_TOOLS_FOR_CODE: readonly string[] = [TOOL.getInvoice, TOOL.getCustomer, TOOL.voidInvoice];
+/** Tools only Till's own code calls: find the client, check the result, undo a mismatch. */
+export const CREATE_TOOLS_FOR_CODE: readonly string[] = [TOOL.listCustomers, TOOL.getInvoice, TOOL.voidInvoice];
 
 /** Safety net: never expose anything that moves money or simulates, whatever a login allows. */
 const MONEY_MOVEMENT = /transfer|payout|conversion_create|create_conversion|simulate/i;

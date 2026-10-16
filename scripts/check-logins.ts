@@ -1,9 +1,9 @@
 // Shows which Airwallex logins Till can use right now, and how many tools each one sees.
 // Never prints tokens. Usage: npm run check-logins -- [slack user id...]
-import { forCreating, forQuestions } from '../lib/airwallex';
+import { forCreating, forQuestions } from '../lib/airwallex/logins';
+import { isConnected, openAirwallex } from '../lib/airwallex/session';
+import { SCOPES } from '../lib/airwallex/tool-policy';
 import { config } from '../lib/config';
-import { isConnected, openAirwallex } from '../lib/mcp';
-import { SCOPES } from '../lib/tool-policy';
 
 async function report(label: string, login: ReturnType<typeof forQuestions>, scopes: readonly string[], access: 'view' | 'create') {
   if (!(await isConnected(login, scopes))) {

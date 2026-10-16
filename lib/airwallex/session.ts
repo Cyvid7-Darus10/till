@@ -3,7 +3,7 @@ import { createMCPClient } from '@ai-sdk/mcp';
 import { getConnectorMetadata, getTokenResponse, UserAuthorizationRequiredError } from '@vercel/connect';
 import { connectAuthProvider } from '@vercel/connect/ai-sdk';
 import type { ToolSet } from 'ai';
-import { config } from './config';
+import { config } from '../config';
 import { type Access, allowedTools } from './tool-policy';
 
 type Login = { type: 'user'; id: string };

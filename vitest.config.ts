@@ -12,7 +12,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['lib/**/*.ts'],
       // Glue around Slack, the model and Airwallex: covered by the live end-to-end run, not unit tests.
-      exclude: ['lib/bot.ts', 'lib/agent.ts', 'lib/cards.tsx', 'lib/instructions.ts'],
+      exclude: ['lib/slack/bot.ts', 'lib/slack/cards.tsx', 'lib/agent/**'],
       thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
     },
   },

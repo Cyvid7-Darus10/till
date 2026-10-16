@@ -1,8 +1,8 @@
 /** @jsxImportSource chat */
 import { Actions, Button, Card, type CardElement, CardText, Field, Fields, LinkButton, toCardElement } from 'chat';
-import { COPY } from './copy';
-import { encodePending, formatAmount, type PendingInvoice } from './invoice-request';
-import { plainText } from './slack-text';
+import { COPY } from '../copy';
+import { encodePending, formatAmount, type PendingInvoice } from '../invoices/request';
+import { plainText } from './text';
 
 /** Slack action ids for the approval buttons. */
 export const ACTIONS = { approve: 'approve_invoice', cancel: 'cancel_invoice' } as const;

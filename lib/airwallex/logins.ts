@@ -1,5 +1,5 @@
 // Whose Airwallex login does Till use? This file is the whole decision.
-import { config } from './config';
+import { config } from '../config';
 
 type Login = { type: 'user'; id: string };
 

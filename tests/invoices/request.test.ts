@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkDecision, decodePending, encodePending, formatAmount, type PendingInvoice } from '../lib/invoice-request';
+import { checkDecision, decodePending, encodePending, formatAmount, type PendingInvoice } from '../../lib/invoices/request';
 
 const pending: PendingInvoice = {
   request: {
