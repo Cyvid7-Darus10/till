@@ -47,8 +47,10 @@ Creating an invoice goes through these checks:
    approval card shows the client's full name as it appears in Airwallex.
 2. Only the admin named on the approval card sees its buttons, and the server checks who clicked and
    in which thread before it acts.
-3. The model builds the invoice for the client on the card. The Airwallex `request_id` comes from
-   the approval card, so a repeated click cannot create a second invoice.
+3. The model builds the invoice for the client on the card, with an Airwallex `request_id` taken
+   from the approval card. Airwallex treats a repeat with the same `request_id` as the same invoice,
+   so a repeated click should not create a second one. This relies on the model passing the id
+   through.
 4. Till reads the invoice back from Airwallex and compares the client, currency, amount and status
    with what was approved. If anything differs, Till voids the invoice.
 
@@ -124,8 +126,10 @@ You need a Vercel team with Vercel Connect and Vercel KMS, a Slack workspace whe
 apps, and an Airwallex sandbox account.
 
 1. Deploy this repository to Vercel as a new project. It needs Node 22 or later.
-2. In the project, open Connect and add a Slack connector named `slack/till`. Install it in your
-   workspace and invite `@Till` to a channel.
+2. In the project, open Connect and add a Slack connector named `slack/till`, with triggers turned
+   on. Install it in your workspace. Then, from this folder, send Slack's events to Till:
+   `vercel connect attach slack/till --triggers --trigger-path /api/webhooks/slack`. Invite `@Till`
+   to a channel.
 3. Add an MCP connector for `https://mcp.sandbox.airwallex.com/developer` named
    `airwallex/till-sandbox`.
 4. In Team Settings, open Key Management. Create an ES256 issuer, add a grant for this project and

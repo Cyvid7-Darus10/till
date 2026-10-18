@@ -2,7 +2,7 @@
 import { plainText, safeLink } from './slack/text';
 
 export const COPY = {
-  noAccess: "I don't have access to our finances yet.",
+  noAccess: "I don't have access to our finances yet. A finance admin needs to connect Airwallex.",
   somethingWrong: 'Something went wrong on my side. Try again in a moment.',
   teamLoginLabel: 'team login',
   footer: (who: string) => `Airwallex: ${plainText(who)}`,

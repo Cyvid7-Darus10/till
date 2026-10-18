@@ -33,7 +33,11 @@ export async function signLoginLink(pending: PendingInvoice): Promise<string> {
 /** Verifies a login-link token. Returns the pending invoice, or null if forged, expired or malformed. */
 export async function verifyLoginLink(token: string, keys: JWTVerifyGetKey = defaultKeySet()): Promise<PendingInvoice | null> {
   try {
-    const { payload } = await jwtVerify(token, keys, { audience: LOGIN_LINK_AUDIENCE });
+    const { payload } = await jwtVerify(token, keys, {
+      audience: LOGIN_LINK_AUDIENCE,
+      algorithms: ['ES256'],
+      requiredClaims: ['exp'],
+    });
     return parsePending(payload.pending);
   } catch {
     return null;

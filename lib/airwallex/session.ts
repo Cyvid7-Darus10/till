@@ -54,7 +54,12 @@ export function parseApiResponse(toolName: string, result: unknown): unknown {
   const text = content.map((part) => part.text ?? '').join('\n');
   const match = text.match(API_RESPONSE);
   if (isError || !match) throw new Error(`Airwallex ${toolName} failed: ${text.slice(0, 300)}`);
-  return JSON.parse(match[1]);
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    // A parse error quotes the text, which can hold customer data, so it stays out of the logs.
+    throw new Error(`Airwallex ${toolName} returned unreadable JSON`);
+  }
 }
 
 /** Opens the Airwallex MCP server as a login, with tools narrowed to what `access` allows. */
