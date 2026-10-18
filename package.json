@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Till: a finance agent in Slack that reads and invoices through Airwallex, with every login managed by Vercel Connect.",
   "private": true,
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=22"
